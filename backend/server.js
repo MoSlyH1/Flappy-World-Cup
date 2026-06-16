@@ -1,8 +1,9 @@
 require('dotenv').config();
 
+const fs = require('fs');
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
 const pool = require('./db/pool');
 const leaderboardRoutes = require('./routes/leaderboard');
 const predictionRoutes = require('./routes/predictions');
@@ -12,9 +13,6 @@ const PORT = parseInt(process.env.PORT || '4000', 10);
 
 app.use(cors());
 app.use(express.json());
-
-// Serve static Flutter web files from ./public/web (matches Dockerfile)
-app.use(express.static(path.join(__dirname, './public/web')));
 
 app.get('/health', async (_req, res) => {
   try {
@@ -28,15 +26,30 @@ app.get('/health', async (_req, res) => {
 app.use('/api', leaderboardRoutes);
 app.use('/api', predictionRoutes);
 
-// SPA fallback
-app.get('*', (_req, res) => {
-  res.sendFile(path.join(__dirname, './public/web/index.html'));
+app.use('/api', (_req, res) => {
+  res.status(404).json({ error: 'Not found' });
 });
 
-app.listen(PORT, () => {
-  console.log(`⚽ Flappy World Cup backend running on http://localhost:${PORT}`);
-  console.log(`   GET  /api/leaderboard`);
-  console.log(`   POST /api/scores`);
-  console.log(`   POST /api/predictions`);
-  console.log(`   GET  /api/predictions/stats`);
+const webDir = path.join(__dirname, 'public', 'web');
+app.use(express.static(webDir));
+
+app.use((_req, res) => {
+  res.sendFile(path.join(webDir, 'index.html'));
 });
+
+async function runMigration() {
+  try {
+    const sql = fs.readFileSync(path.join(__dirname, 'db', 'schema.sql'), 'utf8');
+    await pool.query(sql);
+    console.log('\u2713 schema ensured');
+  } catch (err) {
+    console.error('Schema migration failed:', err.message);
+  }
+}
+
+async function start() {
+  await runMigration();
+  app.listen(PORT, () => console.log(`Flappy World Cup running on port ${PORT}`));
+}
+
+start();
