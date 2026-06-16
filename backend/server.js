@@ -1,11 +1,8 @@
-// ============================================================
-// server.js  —  Express entry point (listens on PORT, default 4000)
-// ============================================================
 require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
-const path = require('path');  // ← ADD THIS LINE
+const path = require('path');
 const pool = require('./db/pool');
 const leaderboardRoutes = require('./routes/leaderboard');
 const predictionRoutes = require('./routes/predictions');
@@ -13,14 +10,12 @@ const predictionRoutes = require('./routes/predictions');
 const app = express();
 const PORT = parseInt(process.env.PORT || '4000', 10);
 
-// --- middleware ---
 app.use(cors());
 app.use(express.json());
 
-// --- serve static files ---
-app.use(express.static(path.join(__dirname, '../flutter_app/build/web')));
+// Serve static Flutter web files from ./public/web (matches Dockerfile)
+app.use(express.static(path.join(__dirname, './public/web')));
 
-// --- health check ---
 app.get('/health', async (_req, res) => {
   try {
     await pool.query('SELECT 1');
@@ -30,13 +25,12 @@ app.get('/health', async (_req, res) => {
   }
 });
 
-// --- API routes ---
 app.use('/api', leaderboardRoutes);
 app.use('/api', predictionRoutes);
 
-// --- SPA fallback ---
+// SPA fallback
 app.get('*', (_req, res) => {
-  res.sendFile(path.join(__dirname, '../flutter_app/build/web/index.html'));
+  res.sendFile(path.join(__dirname, './public/web/index.html'));
 });
 
 app.listen(PORT, () => {
