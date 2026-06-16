@@ -8532,7 +8532,7 @@ aqi:function aqi(){},
 aqj:function aqj(a,b,c){this.a=a
 this.b=b
 this.c=c},
-aKJ(){return"https://flappy-world-cup-0.onrender.com"},
+aKJ(){return"https://flappy-world-cup-5.onrender.com"},
 rY(){var s=$.a_C
 if(s!=null&&B.c.h7(s).length!==0)return B.c.h7(s)
 return A.aKJ()},
