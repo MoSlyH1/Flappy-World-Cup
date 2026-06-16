@@ -5,6 +5,7 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const path = require('path');  // ← ADD THIS LINE
 const pool = require('./db/pool');
 const leaderboardRoutes = require('./routes/leaderboard');
 const predictionRoutes = require('./routes/predictions');
@@ -13,8 +14,11 @@ const app = express();
 const PORT = parseInt(process.env.PORT || '4000', 10);
 
 // --- middleware ---
-app.use(cors()); // allow the Flutter web app (port 8070) + mobile clients
+app.use(cors());
 app.use(express.json());
+
+// --- serve static files ---
+app.use(express.static(path.join(__dirname, '../flutter_app/build/web')));
 
 // --- health check ---
 app.get('/health', async (_req, res) => {
@@ -30,11 +34,7 @@ app.get('/health', async (_req, res) => {
 app.use('/api', leaderboardRoutes);
 app.use('/api', predictionRoutes);
 
-
-// Serve static files
-app.use(express.static(path.join(__dirname, '../flutter_app/build/web')));
-
-// SPA fallback
+// --- SPA fallback ---
 app.get('*', (_req, res) => {
   res.sendFile(path.join(__dirname, '../flutter_app/build/web/index.html'));
 });
