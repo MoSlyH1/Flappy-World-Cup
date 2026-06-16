@@ -1,0 +1,12 @@
+Edit: flutter_app/ios/Runner/Info.plist
+
+Add this block inside the top-level <dict> ... </dict> (allows HTTP to your
+local backend during development):
+
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+        <key>NSAllowsLocalNetworking</key>
+        <true/>
+    </dict>

@@ -1,0 +1,63 @@
+# ============================================================
+# docker-compose.yml  —  Database + Backend + Frontend
+# ------------------------------------------------------------
+# Start EVERYTHING (detached):
+#     docker compose up -d --build
+# Stop EVERYTHING:
+#     docker compose down
+#
+# The database starts FRESH from zero every time, because there
+# is NO persistent volume. schema.sql + seed.sql run on every
+# boot via /docker-entrypoint-initdb.d, so `down` then `up`
+# always gives you a clean, seeded database.
+#
+#   Frontend (Flutter web) -> http://localhost:8070
+#   Backend  (Express API) -> http://localhost:4000
+#   Database (PostgreSQL)  -> localhost:5432
+# ============================================================
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: flappy_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: flappy_bird_game
+    ports:
+      - "5432:5432"
+    # NO volume on purpose -> data is wiped on `docker compose down`.
+    volumes:
+      - ./backend/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./backend/db/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d flappy_bird_game"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: flappy_backend
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: 4000
+      DB_USER: postgres
+      DB_HOST: db          # service name, NOT localhost
+      DB_PASSWORD: postgres
+      DB_PORT: 5432
+      DB_NAME: flappy_bird_game
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./flutter_app
+    container_name: flappy_frontend
+    restart: unless-stopped
+    ports:
+      - "8070:8070"
+    depends_on:
+      - backend

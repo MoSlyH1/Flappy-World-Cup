@@ -1,0 +1,21 @@
+Edit: flutter_app/android/app/src/main/AndroidManifest.xml
+
+1) Make sure this line is present, ABOVE the <application> tag
+   (Flutter adds it for debug automatically, but confirm it for release):
+
+      <uses-permission android:name="android.permission.INTERNET"/>
+
+2) In the opening <application ...> tag, add these two attributes:
+
+      android:usesCleartextTraffic="true"
+      android:networkSecurityConfig="@xml/network_security_config"
+
+   Example:
+
+      <application
+          android:label="flappy_app"
+          android:icon="@mipmap/ic_launcher"
+          android:usesCleartextTraffic="true"
+          android:networkSecurityConfig="@xml/network_security_config">
+          ...
+      </application>

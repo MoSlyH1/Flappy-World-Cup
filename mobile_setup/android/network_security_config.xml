@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copy to: flutter_app/android/app/src/main/res/xml/network_security_config.xml
+  Allows plain HTTP (cleartext) so the app can talk to your local backend
+  during development. For production over HTTPS you can remove this.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
