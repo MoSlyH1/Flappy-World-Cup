@@ -30,9 +30,13 @@ app.get('/health', async (_req, res) => {
 app.use('/api', leaderboardRoutes);
 app.use('/api', predictionRoutes);
 
-// --- 404 fallback ---
-app.use((_req, res) => {
-  res.status(404).json({ error: 'Not found' });
+
+// Serve static files
+app.use(express.static(path.join(__dirname, '../flutter_app/build/web')));
+
+// SPA fallback
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(__dirname, '../flutter_app/build/web/index.html'));
 });
 
 app.listen(PORT, () => {
